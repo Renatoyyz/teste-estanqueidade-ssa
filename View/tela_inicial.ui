@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TelaInicial</class>
+ <widget class="QWidget" name="TelaInicial">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>768</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="btIniciar">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>390</y>
+     <width>212</width>
+     <height>102</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>INICIAR</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btConfigurar">
+   <property name="geometry">
+    <rect>
+     <x>690</x>
+     <y>390</y>
+     <width>212</width>
+     <height>102</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>MENU</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbLogo">
+   <property name="geometry">
+    <rect>
+     <x>23</x>
+     <y>40</y>
+     <width>981</width>
+     <height>210</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-image: url(:/logo/logo.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../../teste-eletrico-qualifix/img/logo_qualifix.qrc"/>
+  <include location="../img/logo_ssa.qrc"/>
+ </resources>
+ <connections/>
+</ui>
