@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from View.tela_inicial import Ui_TelaInicial
 
 from Model.OperacaoManual import OperacaoManual
+from Model.Execucao import Execucao
 
 class TelaInicial(QMainWindow):
     def __init__(self, dado=None, io=None):
@@ -37,11 +38,12 @@ class TelaInicial(QMainWindow):
 
 
     def tela_execucao(self):
-        pass
+        execucao = Execucao(dado=self.dado, io=self.io)
+        execucao.exec_()
 
     def closeEvent(self, event):
         event.accept()
 
     def setfoccus(self, event):
-        if self.io.io_rpi.bot_acio_d == 0:
+        if self.io.io_rpi.botao_esquerdo == 0:
             self.close()

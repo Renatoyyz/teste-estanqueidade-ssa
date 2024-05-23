@@ -5,23 +5,54 @@ import time
 from View.tela_operacao_manual import Ui_OperacaoManual
 
 class Operacao(QObject):
-    sinal_atualizar = pyqtSignal(str)# Inicializa com a quantidade de variáveis que se deseja
+    sinal_atualizar = pyqtSignal(str, int, int)# Inicializa com a quantidade de variáveis que se deseja
 
     def __init__(self, instancia):
         super().__init__()
         self.instancia = instancia
         self._running = True
         self._ofset_temo = 0
+        self._cnt_tempo_maximo = 0
+        self.TEMPO_MAX = 0
 
     def thread_atualizar_valor(self):
         while self._running == True:
             # Obtém o valor atualizado do dado (ou qualquer outra lógica necessária)
 
             variavel = ""
-            # print(valor_atualizado)
 
-            # Emite o sinal para atualizar a interface do usuário
-            self.sinal_atualizar.emit(variavel)
+            if self.instancia._inicia_teste == True:
+                # Dá o start do ateq
+                self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 1)
+                time.sleep(1)
+                self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 0)
+
+                self.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
+
+                while (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1) and self._cnt_tempo_maximo < self.TEMPO_MAX and self.instancia._inicia_teste == True:
+                    self._cnt_tempo_maximo+=1
+                    print(f"Tempo correndo: {self._cnt_tempo_maximo}")
+                    time.sleep(1)
+                if (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1 and self.instancia._inicia_teste == True):
+                    variavel = "Sem resposta do ATEQ."
+                    # Emite o sinal para atualizar a interface do usuário
+                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                elif self.instancia.io.io_rpi.passa_ateq == 0 and self.instancia._inicia_teste == True:
+                    variavel = "PASSOU"
+                    # Emite o sinal para atualizar a interface do usuário
+                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                elif self.instancia.io.io_rpi.fail_ateq == 0 and self.instancia._inicia_teste == True:
+                    variavel = "NÃO PASSOU"
+                    # Emite o sinal para atualizar a interface do usuário
+                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                
+                
+                self._cnt_tempo_maximo = 0
+                self.instancia._inicia_teste=False
+            else:
+                pass
+
+            
 
             # Aguarda 1 segundo antes de atualizar novamente
             QApplication.processEvents()
@@ -38,6 +69,16 @@ class OperacaoManual(QDialog):
         self.io = io
         self.dado = dado
 
+        self._inicia_teste = False
+        self._translate = QCoreApplication.translate
+
+        self.ADR_MOD1 = 1
+        self.ADR_MOD2 = 2
+
+        self.CINZA = "171, 171, 171"
+        self.VERDE = "170, 255, 127"
+        self.VERMELHO = "255, 0, 0"
+
         # Configuração da interface do usuário gerada pelo Qt Designer
         self.ui = Ui_OperacaoManual()
         self.ui.setupUi(self)
@@ -51,7 +92,40 @@ class OperacaoManual(QDialog):
         if self.dado.full_scream == True:
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
+        # Liga e desliga Lateral - operação manual
         self.ui.btVoltar.clicked.connect(self.voltar)
+        self.ui.btLigaLateral_1.clicked.connect(self.liga_lateral_1)
+        self.ui.btLigaLateral_2.clicked.connect(self.liga_lateral_2)
+        self.ui.btLigaLateral_3.clicked.connect(self.liga_lateral_3)
+        self.ui.btLigaLateral_4.clicked.connect(self.liga_lateral_4)
+        self.ui.btDesligaLateral_1.clicked.connect(self.desliga_lateral_1)
+        self.ui.btDesligaLateral_2.clicked.connect(self.desliga_lateral_2)
+        self.ui.btDesligaLateral_3.clicked.connect(self.desliga_lateral_3)
+        self.ui.btDesligaLateral_4.clicked.connect(self.desliga_lateral_4)
+
+        # Liga e desliga Principal - operação manual
+        self.ui.btLigaPrincipal_1.clicked.connect(self.liga_principal_1)
+        self.ui.btLigaPrincipal_2.clicked.connect(self.liga_principal_2)
+        self.ui.btLigaPrincipal_3.clicked.connect(self.liga_principal_3)
+        self.ui.btLigaPrincipal_4.clicked.connect(self.liga_principal_4)
+        self.ui.btDesligaPrincipal_1.clicked.connect(self.desliga_principal_1)
+        self.ui.btDesligaPrincipal_2.clicked.connect(self.desliga_principal_2)
+        self.ui.btDesligaPrincipal_3.clicked.connect(self.desliga_principal_3)
+        self.ui.btDesligaPrincipal_4.clicked.connect(self.desliga_principal_4)
+
+        # Liga e desliga Marcação - operação manual
+        self.ui.btLigaMarca_1.clicked.connect(self.liga_marca_1)
+        self.ui.btLigaMarca_2.clicked.connect(self.liga_marca_2)
+        self.ui.btLigaMarca_3.clicked.connect(self.liga_marca_3)
+        self.ui.btLigaMarca_4.clicked.connect(self.liga_marca_4)
+        self.ui.btDesligaMarca_1.clicked.connect(self.desliga_marca_1)
+        self.ui.btDesligaMarca_2.clicked.connect(self.desliga_marca_2)
+        self.ui.btDesligaMarca_3.clicked.connect(self.desliga_marca_3)
+        self.ui.btDesligaMarca_4.clicked.connect(self.desliga_marca_4)
+
+
+        self.ui.btStartAteq.clicked.connect(self.start_ateq)
+        self.ui.btResettAteq.clicked.connect(self.reset_ateq)
 
         # Inicializar o atualizador em uma nova thread
         self.atualizador = Operacao(self)
@@ -60,9 +134,92 @@ class OperacaoManual(QDialog):
         self.atualizador.moveToThread(self.atualizador_thread)
         self.atualizador_thread.started.connect(self.atualizador.thread_atualizar_valor)
         self.atualizador_thread.start()
+
+    def start_ateq(self):
+        msg = "TESTANDO!"
+        self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.CINZA});")
+        self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
+
+        self._inicia_teste = True
+
+    def reset_ateq(self):
+        if self._inicia_teste == True:
+            msg = "CANCELADO"
+            # Dá o Reset do ateq
+            self.io.wp_8025(self.ADR_MOD2, 5, 1)
+            time.sleep(1)
+            self.io.wp_8025(self.ADR_MOD2, 5, 0)
+            self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.CINZA});")
+            self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
+
+        self._inicia_teste = False
     
-    def thread_operacao(self):
-        pass
+    def liga_lateral_1(self):
+        self.io.wp_8025(self.ADR_MOD1, 1, 1)
+    def liga_lateral_2(self):
+        self.io.wp_8025(self.ADR_MOD1, 2, 1)
+    def liga_lateral_3(self):
+        self.io.wp_8025(self.ADR_MOD1, 3, 1)
+    def liga_lateral_4(self):
+        self.io.wp_8025(self.ADR_MOD1, 4, 1)
+
+    def desliga_lateral_1(self):
+        self.io.wp_8025(self.ADR_MOD1, 1, 0)
+    def desliga_lateral_2(self):
+        self.io.wp_8025(self.ADR_MOD1, 2, 0)
+    def desliga_lateral_3(self):
+        self.io.wp_8025(self.ADR_MOD1, 3, 0)
+    def desliga_lateral_4(self):
+        self.io.wp_8025(self.ADR_MOD1, 4, 0)
+    
+    def liga_principal_1(self):
+        self.io.wp_8025(self.ADR_MOD1, 5, 1)
+    def liga_principal_2(self):
+        self.io.wp_8025(self.ADR_MOD1, 6, 1)
+    def liga_principal_3(self):
+        self.io.wp_8025(self.ADR_MOD1, 7, 1)
+    def liga_principal_4(self):
+        self.io.wp_8025(self.ADR_MOD1, 8, 1)
+
+    def desliga_principal_1(self):
+        self.io.wp_8025(self.ADR_MOD1, 5, 0)
+    def desliga_principal_2(self):
+        self.io.wp_8025(self.ADR_MOD1, 6, 0)
+    def desliga_principal_3(self):
+        self.io.wp_8025(self.ADR_MOD1, 7, 0)
+    def desliga_principal_4(self):
+        self.io.wp_8025(self.ADR_MOD1, 8, 0)
+
+    def liga_marca_1(self):
+        self.io.wp_8025(self.ADR_MOD2, 1, 1)
+    def liga_marca_2(self):
+        self.io.wp_8025(self.ADR_MOD2, 2, 1)
+    def liga_marca_3(self):
+        self.io.wp_8025(self.ADR_MOD2, 3, 1)
+    def liga_marca_4(self):
+        self.io.wp_8025(self.ADR_MOD2, 4, 1)
+
+    def desliga_marca_1(self):
+        self.io.wp_8025(self.ADR_MOD2, 1, 0)
+    def desliga_marca_2(self):
+        self.io.wp_8025(self.ADR_MOD2, 2, 0)
+    def desliga_marca_3(self):
+        self.io.wp_8025(self.ADR_MOD2, 3, 0)
+    def desliga_marca_4(self):
+        self.io.wp_8025(self.ADR_MOD2, 4, 0)
+
+    def thread_operacao(self,msg, passou, fail):
+        if passou == 0:
+            self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.VERDE});")
+            self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
+        elif fail == 0:
+            self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.VERMELHO});")
+            self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
+        elif passou == 1 and fail == 1:
+            self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.VERMELHO});")
+            self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
+
+
 
     def voltar(self):
         self.dado.set_telas(self.dado.TELA_INICIAL)
@@ -70,3 +227,6 @@ class OperacaoManual(QDialog):
 
     def closeEvent(self, event):
         event.accept()
+        self.atualizador.parar()  # Parar a thread do atualizador
+        self.atualizador_thread.quit()
+        self.atualizador_thread.wait()

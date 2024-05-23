@@ -25,10 +25,13 @@ class FakeRPiGPIO:
 
 class InOut:
     def __init__(self):
-        self.CORTINA_LUZ = 10
-        self.BOTAO_EMERGENCIA = 23
-        self.BOT_ACIO_E = 22
-        self.BOT_ACIO_D = 24
+        self.PASS_ATEQ = 23
+        self.FAIL_ATEQ = 22
+
+        self.ACIO_DIREITO = 24
+        self.ACIO_ESQUERDO = 10
+        self.CORTINA_LUZ = 2
+        
         try:
             import RPi.GPIO as GPIO
             self.GPIO = GPIO
@@ -39,24 +42,28 @@ class InOut:
         self.GPIO.setmode(self.GPIO.BCM)
         self.GPIO.setwarnings(False)
 
-        self.GPIO.setup(self.BOT_ACIO_E, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
-        self.GPIO.setup(self.BOT_ACIO_D, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
+        self.GPIO.setup(self.PASS_ATEQ, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
+        self.GPIO.setup(self.FAIL_ATEQ, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
 
+        self.GPIO.setup(self.ACIO_DIREITO, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
+        self.GPIO.setup(self.ACIO_ESQUERDO, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
         self.GPIO.setup(self.CORTINA_LUZ, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
-        self.GPIO.setup(self.BOTAO_EMERGENCIA, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
 
     @property
-    # off_app
-    def bot_acio_e(self):
-        return self.GPIO.input(self.BOT_ACIO_E)
+    def passa_ateq(self):
+        return self.GPIO.input(self.PASS_ATEQ)
 
     @property
-    def bot_acio_d(self):
-        return self.GPIO.input(self.BOT_ACIO_D)
+    def fail_ateq(self):
+        return self.GPIO.input(self.FAIL_ATEQ)
 
     @property
-    def bot_emergencia(self):
-        return self.GPIO.input(self.BOTAO_EMERGENCIA)
+    def botao_direito(self):
+        return self.GPIO.input(self.ACIO_DIREITO)
+
+    @property
+    def botao_esquerdo(self):
+        return self.GPIO.input(self.ACIO_ESQUERDO)
 
     @property
     def cortina_luz(self):
