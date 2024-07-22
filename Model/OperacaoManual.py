@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QDialog, QApplication
-from PyQt5.QtCore import Qt, QCoreApplication, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import Qt,QThread, QCoreApplication, QObject, pyqtSignal, QThread, QTimer, QEventLoop
 import time
 
 from View.tela_operacao_manual import Ui_OperacaoManual
 
-class Operacao(QObject):
+class Operacao(QThread):
     sinal_atualizar = pyqtSignal(str, int, int)# Inicializa com a quantidade de variáveis que se deseja
 
     def __init__(self, instancia):
@@ -15,52 +15,59 @@ class Operacao(QObject):
         self._cnt_tempo_maximo = 0
         self.TEMPO_MAX = 0
 
-    def thread_atualizar_valor(self):
+    def run(self):
         while self._running == True:
-            # Obtém o valor atualizado do dado (ou qualquer outra lógica necessária)
+            try:
+                # Obtém o valor atualizado do dado (ou qualquer outra lógica necessária)
 
-            variavel = ""
+                variavel = ""
 
-            if self.instancia._inicia_teste == True:
-                # Dá o start do ateq
-                self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 1)
-                time.sleep(1)
-                self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 0)
+                if self.instancia._inicia_teste == True:
+                    # Dá o start do ateq
+                    self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 1)
+                    time.sleep(0.2)
+                    self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 6, 0)
 
-                self.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
+                    self.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
 
-                while (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1) and self._cnt_tempo_maximo < self.TEMPO_MAX and self.instancia._inicia_teste == True:
-                    self._cnt_tempo_maximo+=1
-                    print(f"Tempo correndo: {self._cnt_tempo_maximo}")
-                    time.sleep(1)
-                if (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1 and self.instancia._inicia_teste == True):
-                    variavel = "Sem resposta do ATEQ."
-                    # Emite o sinal para atualizar a interface do usuário
-                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
-                elif self.instancia.io.io_rpi.passa_ateq == 0 and self.instancia._inicia_teste == True:
-                    variavel = "PASSOU"
-                    # Emite o sinal para atualizar a interface do usuário
-                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
-                elif self.instancia.io.io_rpi.fail_ateq == 0 and self.instancia._inicia_teste == True:
-                    variavel = "NÃO PASSOU"
-                    # Emite o sinal para atualizar a interface do usuário
-                    self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                    while (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1) and self._cnt_tempo_maximo < self.TEMPO_MAX and self.instancia._inicia_teste == True:
+                        self._cnt_tempo_maximo+=1
+                        print(f"Tempo correndo: {self._cnt_tempo_maximo}")
+                        time.sleep(1)
+                    if (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1 and self.instancia._inicia_teste == True):
+                        variavel = "Sem resposta do ATEQ."
+                        # Emite o sinal para atualizar a interface do usuário
+                        self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                    elif self.instancia.io.io_rpi.passa_ateq == 0 and self.instancia._inicia_teste == True:
+                        variavel = "PASSOU"
+                        # Emite o sinal para atualizar a interface do usuário
+                        self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                    elif self.instancia.io.io_rpi.fail_ateq == 0 and self.instancia._inicia_teste == True:
+                        variavel = "NÃO PASSOU"
+                        # Emite o sinal para atualizar a interface do usuário
+                        self.sinal_atualizar.emit(variavel,self.instancia.io.io_rpi.passa_ateq,self.instancia.io.io_rpi.fail_ateq)
+                    
+                    
+                    self._cnt_tempo_maximo = 0
+                    self.instancia._inicia_teste=False
+                else:
+                    pass
+
                 
-                
-                self._cnt_tempo_maximo = 0
-                self.instancia._inicia_teste=False
-            else:
-                pass
 
+                # Aguarda 1 segundo antes de atualizar novamente
+                # QApplication.processEvents()
+            except Exception as e:
+                print(f"Erro na Thread Operacao {e}")
             
+            QThread.msleep(500)
 
-            # Aguarda 1 segundo antes de atualizar novamente
-            QApplication.processEvents()
-            time.sleep(0.5)
+    def iniciar(self):
+        self._running = True
+        self.start()
 
     def parar(self):
         self._running = False
-
 
 class OperacaoManual(QDialog):
     def __init__(self, dado=None, io=None):
@@ -128,12 +135,11 @@ class OperacaoManual(QDialog):
         self.ui.btResettAteq.clicked.connect(self.reset_ateq)
 
         # Inicializar o atualizador em uma nova thread
+        # Atualizador Thread
         self.atualizador = Operacao(self)
         self.atualizador.sinal_atualizar.connect(self.thread_operacao)
-        self.atualizador_thread = QThread()
-        self.atualizador.moveToThread(self.atualizador_thread)
-        self.atualizador_thread.started.connect(self.atualizador.thread_atualizar_valor)
-        self.atualizador_thread.start()
+        self.atualizador.iniciar()
+        QApplication.processEvents()  # Mantém a UI responsiva após iniciar as threads
 
     def start_ateq(self):
         msg = "TESTANDO!"
@@ -147,7 +153,7 @@ class OperacaoManual(QDialog):
             msg = "CANCELADO"
             # Dá o Reset do ateq
             self.io.wp_8025(self.ADR_MOD2, 5, 1)
-            time.sleep(1)
+            time.sleep(0.2)
             self.io.wp_8025(self.ADR_MOD2, 5, 0)
             self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.CINZA});")
             self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
@@ -218,8 +224,7 @@ class OperacaoManual(QDialog):
         elif passou == 1 and fail == 1:
             self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.VERMELHO});")
             self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
-
-
+        QApplication.processEvents()
 
     def voltar(self):
         self.dado.set_telas(self.dado.TELA_INICIAL)
@@ -228,5 +233,3 @@ class OperacaoManual(QDialog):
     def closeEvent(self, event):
         event.accept()
         self.atualizador.parar()  # Parar a thread do atualizador
-        self.atualizador_thread.quit()
-        self.atualizador_thread.wait()
