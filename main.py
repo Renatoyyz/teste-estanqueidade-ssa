@@ -10,7 +10,7 @@ from img import logo_ssa
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     dado = Dado()
-    io = IO_MODBUS()
+    io = IO_MODBUS(dado=dado)
 
     window = TelaInicial(io=io, dado=dado)
     window.show()

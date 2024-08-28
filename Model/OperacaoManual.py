@@ -24,9 +24,9 @@ class Operacao(QThread):
 
                 if self.instancia._inicia_teste == True:
                     # Dá o start do ateq
-                    self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 2, 1)
+                    self.instancia.io.wp_8025(self.instancia.dado.ADR_MOD2, 2, 1)
                     time.sleep(0.2)
-                    self.instancia.io.wp_8025(self.instancia.ADR_MOD2, 2, 0)
+                    self.instancia.io.wp_8025(self.instancia.dado.ADR_MOD2, 2, 0)
 
                     self.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
 
@@ -78,9 +78,6 @@ class OperacaoManual(QDialog):
 
         self._inicia_teste = False
         self._translate = QCoreApplication.translate
-
-        self.ADR_MOD1 = 1
-        self.ADR_MOD2 = 2
 
         self.CINZA = "171, 171, 171"
         self.VERDE = "170, 255, 127"
@@ -153,66 +150,66 @@ class OperacaoManual(QDialog):
         if self._inicia_teste == True:
             msg = "CANCELADO"
             # Dá o Reset do ateq
-            self.io.wp_8025(self.ADR_MOD2, 1, 1)
+            self.io.wp_8025(self.dado.ADR_MOD2, 1, 1)
             time.sleep(0.2)
-            self.io.wp_8025(self.ADR_MOD2, 1, 0)
+            self.io.wp_8025(self.dado.ADR_MOD2, 1, 0)
             self.ui.lbPassouNaoPassou.setStyleSheet(f"background-color: rgb({self.CINZA});")
             self.ui.lbPassouNaoPassou.setText(self._translate("OperacaoManual", f"<html><head/><body><p align=\"center\">{msg}</p></body></html>"))
             self._inicia_teste = False
     
     def liga_lateral_1(self):
-        self.io.wp_8025(self.ADR_MOD1, 5, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 5, 1)
     def liga_lateral_2(self):
-        self.io.wp_8025(self.ADR_MOD1, 6, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 6, 1)
     def liga_lateral_3(self):
-        self.io.wp_8025(self.ADR_MOD1, 7, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 7, 1)
     def liga_lateral_4(self):
-        self.io.wp_8025(self.ADR_MOD1, 8, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 8, 1)
 
     def desliga_lateral_1(self):
-        self.io.wp_8025(self.ADR_MOD1, 5, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 5, 0)
     def desliga_lateral_2(self):
-        self.io.wp_8025(self.ADR_MOD1, 6, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 6, 0)
     def desliga_lateral_3(self):
-        self.io.wp_8025(self.ADR_MOD1, 7, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 7, 0)
     def desliga_lateral_4(self):
-        self.io.wp_8025(self.ADR_MOD1, 8, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 8, 0)
     
     def liga_principal_1(self):
-        self.io.wp_8025(self.ADR_MOD1, 1, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 1, 1)
     def liga_principal_2(self):
-        self.io.wp_8025(self.ADR_MOD1, 2, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 2, 1)
     def liga_principal_3(self):
-        self.io.wp_8025(self.ADR_MOD1, 3, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 3, 1)
     def liga_principal_4(self):
-        self.io.wp_8025(self.ADR_MOD1, 4, 1)
+        self.io.wp_8025(self.dado.ADR_MOD1, 4, 1)
 
     def desliga_principal_1(self):
-        self.io.wp_8025(self.ADR_MOD1, 1, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 1, 0)
     def desliga_principal_2(self):
-        self.io.wp_8025(self.ADR_MOD1, 2, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 2, 0)
     def desliga_principal_3(self):
-        self.io.wp_8025(self.ADR_MOD1, 3, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 3, 0)
     def desliga_principal_4(self):
-        self.io.wp_8025(self.ADR_MOD1, 4, 0)
+        self.io.wp_8025(self.dado.ADR_MOD1, 4, 0)
 
     def liga_marca_1(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 1)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 1)
     def liga_marca_2(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 1)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 1)
     def liga_marca_3(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 1)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 1)
     def liga_marca_4(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 1)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 1)
 
     def desliga_marca_1(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 0)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 0)
     def desliga_marca_2(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 0)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 0)
     def desliga_marca_3(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 0)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 0)
     def desliga_marca_4(self):
-        self.io.wp_8025(self.ADR_MOD2, 8, 0)
+        self.io.wp_8025(self.dado.ADR_MOD2, 8, 0)
 
     def thread_operacao(self,msg, passou, fail):
         if passou == 0:
@@ -231,5 +228,5 @@ class OperacaoManual(QDialog):
         self.close()
 
     def closeEvent(self, event):
-        event.accept()
         self.atualizador.parar()  # Parar a thread do atualizador
+        event.accept()

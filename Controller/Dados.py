@@ -5,6 +5,9 @@ class Dado:
         self.TELA_INICIAL = 0
         self.TELA_OPERACAO_MANUAL = 1
 
+        self.ADR_MOD1 = 1
+        self.ADR_MOD2 = 2
+
         self._telas = self.TELA_INICIAL
 
         self.full_scream = True

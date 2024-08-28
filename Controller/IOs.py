@@ -81,7 +81,8 @@ class InOut:
     
     
 class IO_MODBUS:
-    def __init__(self):
+    def __init__(self, dado):
+        self.dado = dado
         self._running = True
         self.io_rpi = InOut()
         self.ADR_1 = 1 # Endereço do WP8027 dos relés do lado esquerdo - 16 saídas
@@ -460,6 +461,41 @@ class IO_MODBUS:
             except Exception as e:
                 print(f"Erro de comunicação: {e}")
                 return -1 # Indica erro de alguma natureza....
+            
+    def desliga_lateral(self):
+        self.wp_8025(self.dado.ADR_MOD1, 5, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 6, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 7, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 8, 0)
+    
+    def liga_lateral(self):
+        self.wp_8025(self.dado.ADR_MOD1, 5, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 6, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 7, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 8, 1)
+
+    def liga_principal(self):
+        self.wp_8025(self.dado.ADR_MOD1, 1, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 2, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 3, 1)
+        self.wp_8025(self.dado.ADR_MOD1, 4, 1)
+
+    def desliga_principal(self):
+        self.wp_8025(self.dado.ADR_MOD1, 1, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 2, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 3, 0)
+        self.wp_8025(self.dado.ADR_MOD1, 4, 0)
+
+    def liga_marca(self):
+        self.wp_8025(self.dado.ADR_MOD2, 8, 1)
+
+    def desliga_marca(self):
+        self.wp_8025(self.dado.ADR_MOD2, 8, 0)
+
+    def start_ateq(self):
+        self.wp_8025(self.dado.ADR_MOD2, 2, 1)
+        time.sleep(0.2)
+        self.wp_8025(self.dado.ADR_MOD2, 2, 0)
 
     def reset_serial(self):
         try:
