@@ -12,14 +12,16 @@ class ExecucaoThread(QThread):
         self.instancia = instancia
         self._running = True
         self.invazao = False
+        self.passou_nao_passou = False
         self.botao_emergencia = False
+        self.mensagem = ""
 
     def run(self):
         while self._running == True:
             try:
                 if self.instancia.io.io_rpi.botao_esquerdo == 0 and self.instancia.io.io_rpi.botao_direito == 0:
                     self.executa_teste()
-                self.sinal_atualizar.emit("mensagem",1,2)
+                    self.sinal_atualizar.emit(self.mensagem,self.passou_nao_passou,self.invazao)
                 QThread.msleep(500)
             except Exception as e:
                 print(f"Erro na Thread Operacao {e}")
@@ -32,7 +34,17 @@ class ExecucaoThread(QThread):
                  self.instancia.io.liga_lateral()
                  if self.timer_com_erro(4) == True:
                      self.instancia.io.start_ateq()
-                     # Parei aqui...
+                     if self.check_ateq() == True:
+                         self.mensagem = "Teste executado com sucesso."
+                         self.passou_nao_passou = True
+
+    def check_ateq(self):
+        cnt_ateq = 0
+        while self.instancia.dado.TEMPO_ESPERA_ATEQ > cnt_ateq:
+            print(f"cnt_ateq: {cnt_ateq}")
+            cnt_ateq += 1
+            QThread.msleep(1000)
+        return True
                  
 
 
@@ -42,8 +54,9 @@ class ExecucaoThread(QThread):
         for _ in range(tempo):
             if self.instancia.io.io_rpi.cortina_luz == 1:
                 self.invazao = True
+                self.mensagem = "Invazão detectada pela cortina de luz."
                 return False
-            time.sleep(0.001)
+            QThread.msleep(1)
         return True
 
     def iniciar(self):
@@ -74,6 +87,7 @@ class Execucao(QDialog):
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
         self.ui.btVoltar.clicked.connect(self.voltar)
+        self.ui.btReset.clicked.connect(self.config)    
 
         # Inicializar o atualizador em uma nova thread
         # Atualizador Thread
@@ -84,8 +98,14 @@ class Execucao(QDialog):
 
         self.config()
 
-    def thread_execucao(self,msg, passou, fail):
-        print("Renato")
+    def thread_execucao(self,msg, passou_nao_passou, falha):
+        if msg != "":
+            if passou_nao_passou == True:
+                self.config()
+                self.ui.txaInformacoes.setText(msg)
+            elif passou_nao_passou == False:
+                self.ui.txaInformacoes.setText(msg)
+          
 
     def config(self):
         self.io.desliga_lateral()

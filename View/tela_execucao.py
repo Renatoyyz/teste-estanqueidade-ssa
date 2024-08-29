@@ -53,6 +53,12 @@ class Ui_TelaExecucao(object):
         font.setPointSize(22)
         self.btVoltar.setFont(font)
         self.btVoltar.setObjectName("btVoltar")
+        self.btReset = QtWidgets.QPushButton(TelaExecucao)
+        self.btReset.setGeometry(QtCore.QRect(70, 670, 120, 60))
+        font = QtGui.QFont()
+        font.setPointSize(22)
+        self.btReset.setFont(font)
+        self.btReset.setObjectName("btReset")
 
         self.retranslateUi(TelaExecucao)
         QtCore.QMetaObject.connectSlotsByName(TelaExecucao)
@@ -70,6 +76,7 @@ class Ui_TelaExecucao(object):
 "</style></head><body style=\" font-family:\'PibotoLt\'; font-size:24pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Informações:</p></body></html>"))
         self.btVoltar.setText(_translate("TelaExecucao", "VOLTAR"))
+        self.btReset.setText(_translate("TelaExecucao", "RESET"))
 
 
 if __name__ == "__main__":

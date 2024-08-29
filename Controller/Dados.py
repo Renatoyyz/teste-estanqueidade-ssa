@@ -8,6 +8,8 @@ class Dado:
         self.ADR_MOD1 = 1
         self.ADR_MOD2 = 2
 
+        self.TEMPO_ESPERA_ATEQ = 40  
+
         self._telas = self.TELA_INICIAL
 
         self.full_scream = True
@@ -15,6 +17,9 @@ class Dado:
     @property
     def telas(self):
         return self._telas
+    
+    def set_tempo_espera_ateq(self, tempo):
+        self.TEMPO_ESPERA_ATEQ = tempo
     
     def set_telas(self,tela):
         self.print_status_tela(tela)

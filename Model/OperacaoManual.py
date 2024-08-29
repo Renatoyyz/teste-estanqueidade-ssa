@@ -13,7 +13,6 @@ class Operacao(QThread):
         self._running = True
         self._ofset_temo = 0
         self._cnt_tempo_maximo = 0
-        self.TEMPO_MAX = 0
 
     def run(self):
         while self._running == True:
@@ -28,9 +27,9 @@ class Operacao(QThread):
                     time.sleep(0.2)
                     self.instancia.io.wp_8025(self.instancia.dado.ADR_MOD2, 2, 0)
 
-                    self.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
+                    self.instancia.TEMPO_MAX = int(self.instancia.ui.spinTempoTeste.text())
 
-                    while (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1) and self._cnt_tempo_maximo < self.TEMPO_MAX and self.instancia._inicia_teste == True:
+                    while (self.instancia.io.io_rpi.passa_ateq == 1 and self.instancia.io.io_rpi.fail_ateq == 1) and self._cnt_tempo_maximo < self.instancia.TEMPO_MAX and self.instancia._inicia_teste == True:
                         self._cnt_tempo_maximo+=1
                         print(f"Tempo correndo: {self._cnt_tempo_maximo}")
                         time.sleep(1)
@@ -75,6 +74,7 @@ class OperacaoManual(QDialog):
 
         self.io = io
         self.dado = dado
+        self.TEMPO_MAX = self.dado.TEMPO_ESPERA_ATEQ
 
         self._inicia_teste = False
         self._translate = QCoreApplication.translate
@@ -137,6 +137,10 @@ class OperacaoManual(QDialog):
         self.atualizador.sinal_atualizar.connect(self.thread_operacao)
         self.atualizador.iniciar()
         QApplication.processEvents()  # Mantém a UI responsiva após iniciar as threads
+
+        self.ui.spinTempoTeste.setValue(self.TEMPO_MAX)
+
+        # setText(str(self.TEMPO_MAX))
 
     def start_ateq(self):
         msg = "TESTANDO!"
@@ -228,5 +232,6 @@ class OperacaoManual(QDialog):
         self.close()
 
     def closeEvent(self, event):
+        self.dado.set_tempo_espera_ateq(int(self.ui.spinTempoTeste.text()))
         self.atualizador.parar()  # Parar a thread do atualizador
         event.accept()

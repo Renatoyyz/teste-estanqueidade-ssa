@@ -131,6 +131,24 @@ p, li { white-space: pre-wrap; }
     <string>VOLTAR</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btReset">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>670</y>
+     <width>120</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>22</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>RESET</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

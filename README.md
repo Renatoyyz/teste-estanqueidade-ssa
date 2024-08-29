@@ -44,6 +44,7 @@ O PyQt tem que ser instalado via pacote
 ```text
 sudo apt-get update
 sudo apt-get install qt5-default
+sudo apt install pyqt5-dev-tools
 sudo apt-get install qtcreator
 ```
 
