@@ -419,22 +419,12 @@ class IO_MODBUS:
         parte_superior = (crc_result >> 8) & 0xFF  # Desloca 8 bits para a direita e aplica a máscara 0xFF
         parte_inferior = crc_result & 0xFF        # Aplica a máscara 0xFF diretamente
 
-        # Repete-se os comandos em decimal com os devidos bytes de CRC
-        # self.io_rpi.aciona_re_de(self.io_rpi.SERIAL_OUT)
-        # time.sleep(0.2)
-        # self.ser.flush()
-        self.ser.write([adr,0x0f,0,0,0,16,2,out_val_l,out_val_h,parte_inferior,parte_superior])
-        while self.ser.readable()==False:
-            pass
-        # self.io_rpi.aciona_re_de(self.io_rpi.SERIAL_IN)
-        # time.sleep(0.2)
-        dados_recebidos = self.ser.read(8)
-        # self.ser.flush()
-        # self.io_rpi.aciona_re_de(1)
-        # time.sleep(0.2)
-        # self.io_rpi.aciona_re_de(0)
-        for i in range(3):
-            try:
+        try:
+            self.ser.write([adr,0x0f,0,0,0,16,2,out_val_l,out_val_h,parte_inferior,parte_superior])
+            while self.ser.readable()==False:
+                pass
+            for i in range(3):
+                dados_recebidos = self.ser.read(8)
                 if dados_recebidos != b'':
                     dados_recebidos = dados_recebidos.hex()
                     hex_text = dados_recebidos[0:2]+dados_recebidos[2:4]+dados_recebidos[4:6]+dados_recebidos[6:8]+dados_recebidos[8:10]+dados_recebidos[10:12]
@@ -458,9 +448,9 @@ class IO_MODBUS:
                 else:
                     if i > 1:
                         self.reset_serial()
-            except Exception as e:
-                print(f"Erro de comunicação: {e}")
-                return -1 # Indica erro de alguma natureza....
+        except Exception as e:
+            print(f"Erro de comunicação: {e}")
+            return -1 # Indica erro de alguma natureza....
             
     def desliga_lateral(self):
         self.wp_8025(self.dado.ADR_MOD1, 5, 0)
@@ -492,10 +482,31 @@ class IO_MODBUS:
     def desliga_marca(self):
         self.wp_8025(self.dado.ADR_MOD2, 8, 0)
 
+    def aciona_marcacao(self):
+        self.liga_marca()
+        time.sleep(0.4)
+        self.desliga_marca()
+        self.sinaleiro_passou(1)
+        self.sinaleiro_nao_passou(0)
+
+    def sinaliza_nao_passou(self):
+        self.sinaleiro_passou(0)
+        self.sinaleiro_nao_passou(1)
+
+    def desliga_sinalizacao(self):
+        self.sinaleiro_passou(0)
+        self.sinaleiro_nao_passou(0)
+
     def start_ateq(self):
         self.wp_8025(self.dado.ADR_MOD2, 2, 1)
         time.sleep(0.2)
         self.wp_8025(self.dado.ADR_MOD2, 2, 0)
+
+    def sinaleiro_passou(self, liga_desliga):
+        self.wp_8025(self.dado.ADR_MOD2, 3, liga_desliga)
+
+    def sinaleiro_nao_passou(self, liga_desliga):
+        self.wp_8025(self.dado.ADR_MOD2, 4, liga_desliga)
 
     def reset_serial(self):
         try:

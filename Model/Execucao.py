@@ -3,6 +3,29 @@ from PyQt5.QtCore import Qt, QCoreApplication, QObject, pyqtSignal, QThread
 import time
 
 from View.tela_execucao import Ui_TelaExecucao
+class AtualizacaoThread(QThread):
+    sinal_atualizar = pyqtSignal(str, int, int)# Inicializa com a quantidade de variáveis que se deseja
+
+    def __init__(self, instancia):
+        super().__init__()
+        self.instancia = instancia
+        self._running = True
+
+    def run(self):
+        while self._running == True:
+            try:
+                self.sinal_atualizar.emit("",0,0)
+                QThread.msleep(500)
+            except Exception as e:
+                print(f"Erro na Thread Atualizacao {e}")
+
+    def iniciar(self):
+        self._running = True
+        self.start()
+
+    def parar(self):
+        self._running = False
+
 
 class ExecucaoThread(QThread):
     sinal_atualizar = pyqtSignal(str, int, int)# Inicializa com a quantidade de variáveis que se deseja
@@ -13,15 +36,19 @@ class ExecucaoThread(QThread):
         self._running = True
         self.invazao = False
         self.passou_nao_passou = False
-        self.botao_emergencia = False
         self.mensagem = ""
 
     def run(self):
         while self._running == True:
             try:
-                if self.instancia.io.io_rpi.botao_esquerdo == 0 and self.instancia.io.io_rpi.botao_direito == 0:
+                if self.instancia._inicia_teste == True:
                     self.executa_teste()
                     self.sinal_atualizar.emit(self.mensagem,self.passou_nao_passou,self.invazao)
+                    self.instancia._inicia_teste = False
+                else:
+                    self.invazao = False
+                    self.passou_nao_passou = False
+                    self.mensagem = ""
                 QThread.msleep(500)
             except Exception as e:
                 print(f"Erro na Thread Operacao {e}")
@@ -37,14 +64,24 @@ class ExecucaoThread(QThread):
                      if self.check_ateq() == True:
                          self.mensagem = "Teste executado com sucesso."
                          self.passou_nao_passou = True
+                     else:
+                        self.mensagem = "Falha no teste."
+                        self.passou_nao_passou = False
 
     def check_ateq(self):
         cnt_ateq = 0
+        ret = False
         while self.instancia.dado.TEMPO_ESPERA_ATEQ > cnt_ateq:
             print(f"cnt_ateq: {cnt_ateq}")
             cnt_ateq += 1
             QThread.msleep(1000)
-        return True
+            if self.instancia.io.io_rpi.passa_ateq == 0:
+                ret = True
+                break
+            elif self.instancia.io.io_rpi.fail_ateq == 0:
+                ret = False
+                break
+        return ret
                  
 
 
@@ -72,6 +109,10 @@ class Execucao(QDialog):
 
         self.io = io
         self.dado = dado
+        self.mensagem = ""
+        self._inicia_teste = False
+        self.cnt_pecas_aprovadas = 0
+        self.cnt_pecas_reprovadas = 0
 
         # Configuração da interface do usuário gerada pelo Qt Designer
         self.ui = Ui_TelaExecucao()
@@ -87,32 +128,72 @@ class Execucao(QDialog):
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
         self.ui.btVoltar.clicked.connect(self.voltar)
-        self.ui.btReset.clicked.connect(self.config)    
+        self.ui.btReset.clicked.connect(self.reset_sistema)    
 
         # Inicializar o atualizador em uma nova thread
         # Atualizador Thread
         self.atualizador = ExecucaoThread(self)
         self.atualizador.sinal_atualizar.connect(self.thread_execucao)
         self.atualizador.iniciar()
+
+        self.visualuizador = AtualizacaoThread(self)
+        self.visualuizador.sinal_atualizar.connect(self.thread_visualizacao)
+        self.visualuizador.iniciar()
+
         QApplication.processEvents()  # Mantém a UI responsiva após iniciar as threads
 
         self.config()
+    
+    def thread_visualizacao(self, msg, passou_nao_passou, falha):
+        # Se botões esquerdo e direito pressionados
+        if self.io.io_rpi.botao_esquerdo == 0 and self.io.io_rpi.botao_direito == 0 and self._inicia_teste == False:
+            self.ui.txaInformacoes.setText("Executando Teste")
+            self._inicia_teste = True # Inicia o teste
+            self.io.desliga_sinalizacao()
 
     def thread_execucao(self,msg, passou_nao_passou, falha):
+        self.mensagem = msg
         if msg != "":
-            if passou_nao_passou == True:
+            if passou_nao_passou == True and falha == False:
+                self.io.aciona_marcacao()
                 self.config()
-                self.ui.txaInformacoes.setText(msg)
-            elif passou_nao_passou == False:
-                self.ui.txaInformacoes.setText(msg)
-          
+                self.ui.txaInformacoes.setText(self.mensagem)
+                self.muda_valor_pecas_aprovadas(1)
+            elif passou_nao_passou == False and falha == False:
+                # self.config()
+                self.ui.txaInformacoes.setText(self.mensagem)
+                self.muda_valor_pecas_reprovadas(1)
+                self.io.sinaliza_nao_passou()
+            elif falha == True:
+                # self.config()
+                self.ui.txaInformacoes.setText(self.mensagem)
+
+    def muda_valor_pecas_aprovadas(self, valor):
+        self.cnt_pecas_aprovadas += valor
+        self.ui.lbNumPecasAprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_aprovadas}</p></body></html>")
+        # self.ui.lbNumPecasReprovadas.setText(_translate("TelaExecucao", "<html><head/><body><p align=\"center\">0</p></body></html>"))
+
+    def muda_valor_pecas_reprovadas(self, valor):
+        self.cnt_pecas_reprovadas += valor
+        self.ui.lbNumPecasReprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_reprovadas}</p></body></html>")
+        # self.ui.lbNumPecasReprovadas.setText(_translate("TelaExecucao", "<html><head/><body><p align=\"center\">0</p></body
+
+    def reset_sistema(self):
+        # self.cnt_pecas_aprovadas = 0
+        # self.cnt_pecas_reprovadas = 0
+        self.ui.lbNumPecasAprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_aprovadas}</p></body></html>")
+        self.ui.lbNumPecasReprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_reprovadas}</p></body></html>")
+        self.config()
 
     def config(self):
+        self.ui.lbNumPecasAprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_aprovadas}</p></body></html>")
+        self.ui.lbNumPecasReprovadas.setText(f"<html><head/><body><p align=\"center\">{self.cnt_pecas_reprovadas}</p></body></html>")
+        # self.mensagem = "Maquina pronta para iniciar o teste."
+        # self.ui.txaInformacoes.setText(self.mensagem)
         self.io.desliga_lateral()
         time.sleep(1)
         self.io.desliga_principal()
         time.sleep(1)
-        self.io.desliga_marca()
 
     def voltar(self):
         self.close()

@@ -8,7 +8,7 @@ class Dado:
         self.ADR_MOD1 = 1
         self.ADR_MOD2 = 2
 
-        self.TEMPO_ESPERA_ATEQ = 40  
+        self.TEMPO_ESPERA_ATEQ = 65  
 
         self._telas = self.TELA_INICIAL
 
