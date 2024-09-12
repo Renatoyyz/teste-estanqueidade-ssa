@@ -55,9 +55,9 @@ class ExecucaoThread(QThread):
     
     def executa_teste(self):
         self.instancia.io.desliga_lateral()
-        if self.timer_com_erro(4) == True:
+        if self.timer_com_erro(1) == True:
             self.instancia.io.liga_principal()
-            if self.timer_com_erro(4) == True:
+            if self.timer_com_erro(3.5) == True:
                  self.instancia.io.liga_lateral()
                  if self.timer_com_erro(4) == True:
                      self.instancia.io.start_ateq()
@@ -65,7 +65,7 @@ class ExecucaoThread(QThread):
                          self.mensagem = "Teste executado com sucesso."
                          self.passou_nao_passou = True
                      else:
-                        self.mensagem = "Falha no teste."
+                        self.mensagem = "Falha no teste.\nPressione o botão reset e descarte as 4 peças."
                         self.passou_nao_passou = False
 
     def check_ateq(self):
@@ -114,6 +114,9 @@ class Execucao(QDialog):
         self.cnt_pecas_aprovadas = 0
         self.cnt_pecas_reprovadas = 0
 
+        self.cnt_para_liberar_pecas_rerovadas = 0
+        self.libera_contagem_pecas_reprovadas = False
+
         # Configuração da interface do usuário gerada pelo Qt Designer
         self.ui = Ui_TelaExecucao()
         self.ui.setupUi(self)
@@ -146,10 +149,19 @@ class Execucao(QDialog):
     
     def thread_visualizacao(self, msg, passou_nao_passou, falha):
         # Se botões esquerdo e direito pressionados
-        if self.io.io_rpi.botao_esquerdo == 0 and self.io.io_rpi.botao_direito == 0 and self._inicia_teste == False:
+        if self.io.io_rpi.botao_esquerdo == 0 and self.io.io_rpi.botao_direito == 0 and self._inicia_teste == False and self.libera_contagem_pecas_reprovadas == False:
             self.ui.txaInformacoes.setText("Executando Teste")
             self._inicia_teste = True # Inicia o teste
             self.io.desliga_sinalizacao()
+        if self.libera_contagem_pecas_reprovadas == True and self.io.io_rpi.sensor_otico == 1:
+            while self.io.io_rpi.sensor_otico == 1:
+                time.sleep(0.5)
+            self.cnt_para_liberar_pecas_rerovadas += 1
+            if self.cnt_para_liberar_pecas_rerovadas >= 4:
+                self.libera_contagem_pecas_reprovadas = False
+                self.cnt_para_liberar_pecas_rerovadas = 0
+                self.ui.txaInformacoes.setText("Máquina pronta.")
+                # time.sleep(1)
 
     def thread_execucao(self,msg, passou_nao_passou, falha):
         self.mensagem = msg
@@ -158,12 +170,13 @@ class Execucao(QDialog):
                 self.io.aciona_marcacao()
                 self.config()
                 self.ui.txaInformacoes.setText(self.mensagem)
-                self.muda_valor_pecas_aprovadas(1)
+                self.muda_valor_pecas_aprovadas(4)
             elif passou_nao_passou == False and falha == False:
                 # self.config()
                 self.ui.txaInformacoes.setText(self.mensagem)
-                self.muda_valor_pecas_reprovadas(1)
+                self.muda_valor_pecas_reprovadas(4)
                 self.io.sinaliza_nao_passou()
+                self.libera_contagem_pecas_reprovadas = True # Libera a contagem de peças reprovadas
             elif falha == True:
                 # self.config()
                 self.ui.txaInformacoes.setText(self.mensagem)
@@ -201,4 +214,5 @@ class Execucao(QDialog):
     def closeEvent(self, event):
         self.config()
         self.atualizador.parar()  # Parar a thread do atualizador
+        self.visualuizador.parar() # Parar a thread do visualizador
         event.accept()

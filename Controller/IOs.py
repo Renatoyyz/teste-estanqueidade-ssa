@@ -31,6 +31,7 @@ class InOut:
         self.ACIO_DIREITO = 24
         self.ACIO_ESQUERDO = 10
         self.CORTINA_LUZ = 2
+        self.SENSOR_OTICO = 3
 
         self.RE_DE = 17
         self.SERIAL_OUT = 0
@@ -52,6 +53,8 @@ class InOut:
         self.GPIO.setup(self.ACIO_DIREITO, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
         self.GPIO.setup(self.ACIO_ESQUERDO, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
         self.GPIO.setup(self.CORTINA_LUZ, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
+        self.GPIO.setup(self.SENSOR_OTICO, self.GPIO.IN, pull_up_down=self.GPIO.PUD_UP)
+
 
         self.GPIO.setup(self.RE_DE,self.GPIO.OUT)
         self.GPIO.output(self.RE_DE,1)
@@ -75,6 +78,10 @@ class InOut:
     @property
     def cortina_luz(self):
         return self.GPIO.input(self.CORTINA_LUZ)
+    
+    @property
+    def sensor_otico(self):
+        return self.GPIO.input(self.SENSOR_OTICO)
     
     def aciona_re_de(self, status):
         self.GPIO.output(self.RE_DE,status)
