@@ -57,6 +57,7 @@ class ExecucaoThread(QThread):
         self.instancia.io.desliga_lateral()
         if self.timer_com_erro(1) == True:
             self.instancia.io.liga_principal()
+            self.instancia.io.habilita_cortina_luz()
             if self.timer_com_erro(3.5) == True:
                  self.instancia.io.liga_lateral()
                  if self.timer_com_erro(4) == True:
@@ -207,12 +208,14 @@ class Execucao(QDialog):
         time.sleep(1)
         self.io.desliga_principal()
         time.sleep(1)
+        self.io.desabilita_cortina_luz()
 
     def voltar(self):
         self.close()
 
     def closeEvent(self, event):
         self.config()
+        self.io.habilita_cortina_luz()
         self.atualizador.parar()  # Parar a thread do atualizador
         self.visualuizador.parar() # Parar a thread do visualizador
         event.accept()

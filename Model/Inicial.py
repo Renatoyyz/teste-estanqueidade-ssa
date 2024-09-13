@@ -31,6 +31,11 @@ class TelaInicial(QMainWindow):
         self.ui.btConfigurar.clicked.connect(self.tela_configurar)
         self.ui.btIniciar.clicked.connect(self.tela_execucao)
 
+        self.config()
+
+    def config(self):
+        self.io.habilita_cortina_luz()
+
     def tela_configurar(self):
         self.dado.set_telas(self.dado.TELA_OPERACAO_MANUAL)
         oper_manual = OperacaoManual(dado=self.dado, io=self.io)

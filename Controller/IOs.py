@@ -483,6 +483,12 @@ class IO_MODBUS:
         self.wp_8025(self.dado.ADR_MOD1, 3, 0)
         self.wp_8025(self.dado.ADR_MOD1, 4, 0)
 
+    def desabilita_cortina_luz(self):
+        self.wp_8025(self.dado.ADR_MOD2, 5, 1)
+
+    def habilita_cortina_luz(self):
+        self.wp_8025(self.dado.ADR_MOD2, 5, 0)
+
     def liga_marca(self):
         self.wp_8025(self.dado.ADR_MOD2, 8, 1)
 
