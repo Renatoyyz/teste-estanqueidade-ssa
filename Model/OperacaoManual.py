@@ -180,21 +180,37 @@ class OperacaoManual(QDialog):
         self.io.wp_8025(self.dado.ADR_MOD1, 8, 0)
     
     def liga_principal_1(self):
+        self.desliga_lateral_1()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 1, 1)
     def liga_principal_2(self):
+        self.desliga_lateral_2()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 2, 1)
     def liga_principal_3(self):
+        self.desliga_lateral_3()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 3, 1)
     def liga_principal_4(self):
+        self.desliga_lateral_4()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 4, 1)
 
     def desliga_principal_1(self):
+        self.desliga_lateral_1()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 1, 0)
     def desliga_principal_2(self):
+        self.desliga_lateral_2()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 2, 0)
     def desliga_principal_3(self):
+        self.desliga_lateral_3()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 3, 0)
     def desliga_principal_4(self):
+        self.desliga_lateral_4()
+        time.sleep(1)
         self.io.wp_8025(self.dado.ADR_MOD1, 4, 0)
 
     def liga_marca_1(self):
