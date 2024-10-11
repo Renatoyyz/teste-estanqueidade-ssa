@@ -15,7 +15,7 @@ class AtualizacaoThread(QThread):
         while self._running == True:
             try:
                 self.sinal_atualizar.emit("",0,0)
-                QThread.msleep(500)
+                QThread.msleep(100)
             except Exception as e:
                 print(f"Erro na Thread Atualizacao {e}")
 
